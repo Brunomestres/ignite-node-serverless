@@ -1,0 +1,35 @@
+import { document } from "../utils/dynamodbClient";
+import { v4 as uuid } from "uuid";
+
+export const handle = async (event) => {
+  const { user_id } = event.pathParameters;
+  let { title, deadline } = JSON.parse(event.body);
+
+  const id = uuid();
+
+  const data = {
+    id,
+    user_id,
+    title,
+    done: false,
+    deadline: new Date(deadline).toUTCString(),
+  };
+
+  await document
+    .put({
+      TableName: "todos",
+      Item: data,
+    })
+    .promise();
+
+  return {
+    statusCode: 201,
+    body: JSON.stringify({
+      message: "TODO created",
+      data,
+    }),
+    headers: {
+      "Content-type": "application/json",
+    },
+  };
+};
